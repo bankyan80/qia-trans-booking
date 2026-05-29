@@ -1,16 +1,23 @@
 import admin from 'firebase-admin'
-import path from 'path'
-import fs from 'fs'
 
-const serviceAccountPath = path.join(process.cwd(), 'firebase', 'service-account.json')
-const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf-8'))
+function getServiceAccount() {
+  const envSa = process.env.FIREBASE_SERVICE_ACCOUNT
+  if (envSa) {
+    return JSON.parse(envSa)
+  }
+  // fallback for local dev
+  const fs = require('fs') as typeof import('fs')
+  const path = require('path') as typeof import('path')
+  const filePath = path.join(process.cwd(), 'firebase', 'service-account.json')
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+}
 
 function getFirebaseApp() {
   if (admin.apps.length > 0) {
     return admin.app()
   }
   return admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(getServiceAccount()),
   })
 }
 

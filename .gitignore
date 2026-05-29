@@ -55,3 +55,4 @@ server.log
 
 # Firebase service account
 /firebase/*.json
+.vercel
