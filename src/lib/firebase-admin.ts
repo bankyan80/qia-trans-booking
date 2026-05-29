@@ -1,8 +1,8 @@
 import admin from 'firebase-admin'
 
 function getServiceAccount(): Record<string, unknown> {
-  const envSa = process.env.FIREBASE_SERVICE_ACCOUNT
-  if (envSa) return JSON.parse(envSa)
+  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_B64
+  if (b64) return JSON.parse(Buffer.from(b64, 'base64').toString('utf-8'))
 
   try {
     const fs = require('fs') as typeof import('fs')
@@ -10,7 +10,7 @@ function getServiceAccount(): Record<string, unknown> {
     const filePath = path.join(process.cwd(), 'firebase', 'service-account.json')
     return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
   } catch {
-    throw new Error('Firebase service account not found. Set FIREBASE_SERVICE_ACCOUNT env var or place firebase/service-account.json')
+    throw new Error('Firebase service account not found. Set FIREBASE_SERVICE_ACCOUNT_B64 env var or place firebase/service-account.json')
   }
 }
 
