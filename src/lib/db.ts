@@ -5,12 +5,15 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 async function initPrisma(): Promise<PrismaClient> {
-  if (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
+  const url = process.env.TURSO_DATABASE_URL?.trim()
+  const authToken = process.env.TURSO_AUTH_TOKEN?.trim()
+
+  if (url && authToken) {
     const { createClient } = await import('@libsql/client')
     const { PrismaLibSQL } = await import('@prisma/adapter-libsql')
     const libsql = createClient({
-      url: process.env.TURSO_DATABASE_URL,
-      authToken: process.env.TURSO_AUTH_TOKEN,
+      url,
+      authToken,
     })
     return new PrismaClient({ adapter: new PrismaLibSQL(libsql) })
   }
