@@ -82,7 +82,8 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error('Auth error:', error);
-    return NextResponse.json({ error: 'Terjadi kesalahan server' }, { status: 500 });
+    const msg = error instanceof Error ? error.message + ' | ' + error.stack?.slice(0,200) : 'unknown';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
