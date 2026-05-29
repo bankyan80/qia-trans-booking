@@ -1,24 +1,31 @@
 import admin from 'firebase-admin'
 
-function getServiceAccount() {
-  const envSa = process.env.FIREBASE_SERVICE_ACCOUNT
-  if (envSa) {
-    return JSON.parse(envSa)
-  }
-  // fallback for local dev
-  const fs = require('fs') as typeof import('fs')
-  const path = require('path') as typeof import('path')
-  const filePath = path.join(process.cwd(), 'firebase', 'service-account.json')
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-}
-
 function getFirebaseApp() {
   if (admin.apps.length > 0) {
     return admin.app()
   }
-  return admin.initializeApp({
-    credential: admin.credential.cert(getServiceAccount()),
-  })
+
+  const envSa = process.env.FIREBASE_SERVICE_ACCOUNT
+  if (envSa) {
+    try {
+      const sa = JSON.parse(envSa)
+      return admin.initializeApp({ credential: admin.credential.cert(sa) })
+    } catch (e) {
+      console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT env var:', e)
+      throw e
+    }
+  }
+
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    const filePath = path.join(process.cwd(), 'firebase', 'service-account.json')
+    const sa = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+    return admin.initializeApp({ credential: admin.credential.cert(sa) })
+  } catch (e) {
+    console.error('Failed to load firebase service account from file:', e)
+    throw e
+  }
 }
 
 export async function verifyGoogleToken(idToken: string) {
