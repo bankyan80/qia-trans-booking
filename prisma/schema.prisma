@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nama      String
+  email     String   @unique
+  no_wa     String
+  password  String
+  role      String   @default("customer") // admin, customer
+  createdat DateTime @default(now())
+  updatedat DateTime @updatedAt
+
+  bookings Booking[]
+  payments Payment[]
+}
+
+model Car {
+  id           String   @id @default(cuid())
+  nama_mobil   String
+  merk         String
+  tipe         String   @default("")
+  tahun        Int      @default(2024)
+  transmisi    String   @default("Automatic") // Automatic, Manual
+  kapasitas    Int      @default(5)
+  nomor_polisi String
+  warna        String   @default("")
+  harga_harian Float    @default(0)
+  harga_sopir  Float    @default(0)
+  deposit      Float    @default(0)
+  biaya_antar_jemput Float @default(0)
+  status       String   @default("Tersedia") // Tersedia, Disewa, Maintenance
+  foto_url     String   @default("")
+  deskripsi    String   @default("")
+  createdat    DateTime @default(now())
+  updatedat    DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id               String   @id @default(cuid())
+  kode_booking     String   @unique
+  user_id          String
+  car_id           String
+  nama_penyewa     String
+  no_wa            String
+  alamat           String   @default("")
+  nik              String   @default("")
+  no_sim           String   @default("")
+  ktp_url          String   @default("")
+  sim_url          String   @default("")
+  tanggal_mulai    String
+  jam_mulai        String   @default("08:00")
+  tanggal_selesai  String
+  jam_selesai      String   @default("08:00")
+  durasi_hari      Int      @default(1)
+  jenis_sewa       String   @default("lepas_kunci") // lepas_kunci, dengan_sopir
+  lokasi_jemput    String   @default("")
+  biaya_sewa       Float    @default(0)
+  biaya_sopir      Float    @default(0)
+  biaya_antar_jemput Float  @default(0)
+  deposit          Float    @default(0)
+  total_biaya      Float    @default(0)
+  status_booking   String   @default("Menunggu Konfirmasi")
+  status_pembayaran String  @default("Belum Bayar")
+  createdat        DateTime @default(now())
+  updatedat        DateTime @updatedAt
+
+  user      User     @relation(fields: [user_id], references: [id])
+  car       Car      @relation(fields: [car_id], references: [id])
+  payments  Payment[]
+  handovers Handover[]
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  booking_id     String
+  metode         String   @default("Transfer Bank") // Transfer Bank, QRIS, Cash
+  jumlah_bayar   Float    @default(0)
+  bukti_bayar_url String  @default("")
+  status         String   @default("Belum Bayar") // Belum Bayar, Menunggu Verifikasi, DP Diterima, Lunas, Ditolak
+  tanggal_bayar  String   @default("")
+  verified_at    String   @default("")
+  createdat      DateTime @default(now())
+
+  booking Booking @relation(fields: [booking_id], references: [id])
+  user    User    @relation(fields: [user_id], references: [id])
+  user_id String
+}
+
+model Handover {
+  id            String   @id @default(cuid())
+  booking_id    String
+  km_awal       Float    @default(0)
+  km_akhir      Float    @default(0)
+  bbm_awal      String   @default("") // E, 1/4, 1/2, 3/4, F
+  bbm_akhir     String   @default("")
+  foto_awal_url String   @default("")
+  foto_akhir_url String  @default("")
+  catatan_awal  String   @default("")
+  catatan_akhir String   @default("")
+  denda         Float    @default(0)
+  denda_keterangan String @default("")
+  status_deposit String  @default("Belum Dikembalikan") // Belum Dikembalikan, Dikembalikan, Dipotong
+  createdat     DateTime @default(now())
+  updatedat     DateTime @updatedAt
+
+  booking Booking @relation(fields: [booking_id], references: [id])
+}
+
+model Settings {
+  id              String   @id @default(cuid())
+  nama_perusahaan String   @default("Qia Trans")
+  nama_aplikasi   String   @default("Booking MobilKu")
+  no_wa_admin     String   @default("")
+  alamat_perusahaan String @default("")
+  rekening_bank   String   @default("")
+  qris_url        String   @default("")
+  logo_url        String   @default("")
+  warna_utama     String   @default("#0f172a")
+  createdat       DateTime @default(now())
+  updatedat       DateTime @updatedAt
+}
