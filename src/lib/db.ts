@@ -12,13 +12,8 @@ async function initPrisma(): Promise<PrismaClient> {
   console.error('[db] TURSO_AUTH_TOKEN:', authToken ? 'set' : 'UNDEFINED')
 
   if (url && authToken) {
-    const { createClient } = await import('@libsql/client')
     const { PrismaLibSQL } = await import('@prisma/adapter-libsql')
-    const libsql = createClient({
-      url,
-      authToken,
-    })
-    return new PrismaClient({ adapter: new PrismaLibSQL(libsql) })
+    return new PrismaClient({ adapter: new PrismaLibSQL({ url, authToken }) })
   }
   return new PrismaClient({
     log: process.env.NODE_ENV !== 'production' ? ['query'] : [],
